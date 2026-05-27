@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ELAND | Global Asset Specifications Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Libraries for Barcode and QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 560px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            animation: mcLabelIn 0.4s ease;
+        }
+
+        @keyframes mcLabelIn {
+            from { opacity: 0; transform: scale(0.95) translateY(15px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0891b2 100%);
+            padding: 18px 25px 16px;
+            position: relative;
+        }
+
+        .header-top {
+            color: #7dd3fc;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .header-title {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 19px;
+            line-height: 1.2;
+        }
+
+        .header-sub {
+            color: #94a3b8;
+            font-size: 11.5px;
+            margin-top: 3px;
+        }
+
+        .print-area {
+            padding: 22px 25px 0;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 480px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .qr-block {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .qr-title {
+            font-size: 9px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .qr-wrapper {
+            width: 108px;
+            height: 108px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #fff;
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 0 0 1px #e2e8f0;
+        }
+
+        .qr-sub {
+            font-size: 9px;
+            color: #94a3b8;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .barcode-block {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .barcode-title {
+            font-size: 9px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .barcode-wrapper {
+            background: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 9px 11px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-label {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            word-break: break-word;
+        }
+
+        .footer {
+            background: linear-gradient(90deg, #0f172a, #1e3a5f);
+            border-radius: 8px;
+            padding: 9px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand {
+            color: #7dd3fc;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .footer-text {
+            color: #475569;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .error-card {
+            text-align: center;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+        <!-- Loading State -->
+        <div style="text-align: center; padding: 60px 0;" id="loadingState">
+            <div style="color: #0891b2; font-size: 16px; margin-bottom: 15px; font-weight: 700;">LOADING ASSET PROFILE...</div>
+            <div style="width: 30px; height: 30px; border: 3px solid rgba(8, 145, 178, 0.2); border-top-color: #0891b2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate Age
+        function calculateAging(purchaseDateStr) {
+            if (!purchaseDateStr) return '\u2014';
+            const pd = new Date(purchaseDateStr);
+            if (isNaN(pd.getTime())) return '\u2014';
+            const diffMs = Date.now() - pd.getTime();
+            const ageYrs = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+            return ageYrs.toFixed(1) + ' Years';
+        }
+
+        function getParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                code: params.get('code') || params.get('c'),
+                type: params.get('type') || params.get('t'),
+                make: params.get('make') || params.get('mk'),
+                model: params.get('model') || params.get('md'),
+                serial: params.get('serial') || params.get('s'),
+                location: params.get('location') || params.get('l'),
+                unit: params.get('unit') || params.get('u'),
+                status: params.get('status') || params.get('st'),
+                condition: params.get('condition') || params.get('cn'),
+                svc: params.get('svc') || params.get('sv')
+            };
+        }
+
+        window.onload = function() {
+            const data = getParams();
+            const app = document.getElementById('app');
+
+            if (!data.code) {
+                app.innerHTML = `
+                    <div class="error-card">
+                        <div style="font-size: 40px; margin-bottom: 15px;">&#9888;&#65039;</div>
+                        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Invalid Asset Tag</h2>
+                        <p style="color: #64748b; font-size: 13px; line-height: 1.6;">No machine parameters found in QR scanner payload. Please ensure you are scanning a valid ELAND asset code sticker.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Colors based on status & condition
+            const isActive = (data.status || 'Active').toLowerCase() === 'active';
+            const statusBg = isActive ? '#dcfce7' : (data.status === 'Under Maintenance' ? '#fef3c7' : '#f1f5f9');
+            const statusColor = isActive ? '#16a34a' : (data.status === 'Under Maintenance' ? '#d97706' : '#64748b');
+
+            const isGood = (data.condition || 'Good').toLowerCase() === 'good';
+            const isFair = (data.condition || 'Good').toLowerCase() === 'fair';
+            const condBg = isGood ? '#fef9c3' : (isFair ? '#ffedd5' : '#fee2e2');
+            const condColor = isGood ? '#ca8a04' : (isFair ? '#c2410c' : '#dc2626');
+
+            const todayStr = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+
+            app.innerHTML = `
+                <!-- Gradient Header Bar -->
+                <div class="header">
+                    <div class="header-top">&#127981; MACHINE ASSET LABEL</div>
+                    <div class="header-title">${data.code} &mdash; ${data.type || 'N/A'} (${(data.make || '').toUpperCase()})</div>
+                    <div class="header-sub">${data.model || '\u2014'} &middot; SN: ${data.serial || '\u2014'} &middot; Location: ${data.location || '\u2014'}</div>
+                </div>
+
+                <!-- Print Area -->
+                <div class="print-area">
+                    <!-- Status + Classification Row -->
+                    <div class="badge-row">
+                        <span class="badge" style="background:${statusBg}; color:${statusColor};">&bull; ${data.status || 'Active'}</span>
+                        <span class="badge" style="background:${condBg}; color:${condColor};">&loz; ${data.condition || 'Good'}</span>
+                        <span class="badge" style="background:#f0f9ff; color:#0891b2;">&starf; Age: ${calculateAging(data.svc)}</span>
+                        <span class="badge" style="background:#f5f3ff; color:#7c3aed; text-transform:none;">&#127962; ${data.unit || '\u2014'}</span>
+                    </div>
+
+                    <!-- QR + Barcode Side by Side -->
+                    <div class="main-grid">
+
+                        <!-- QR Code Block -->
+                        <div class="qr-block">
+                            <div class="qr-title">SCAN QR CODE</div>
+                            <div class="qr-wrapper">
+                                <div id="mobileQrCode" style="width:108px; height:108px;"></div>
+                            </div>
+                            <div class="qr-sub">Global Asset Lookup</div>
+                        </div>
+
+                        <!-- Right: Barcode + Info Grid -->
+                        <div class="right-col">
+
+                            <!-- Barcode Block -->
+                            <div class="barcode-block">
+                                <div class="barcode-title">BARCODE - CODE 128</div>
+                                <div class="barcode-wrapper">
+                                    <svg id="mobileBarcode" style="max-width:100%;"></svg>
+                                </div>
+                            </div>
+
+                            <!-- Asset Info Grid -->
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-label">Unit</div>
+                                    <div class="info-value">${data.unit || '\u2014'}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value">${data.status || 'Active'}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label">Condition</div>
+                                    <div class="info-value">${data.condition || 'Good'}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label">Last Service</div>
+                                    <div class="info-value" style="font-size:12px; font-weight:600;">${data.svc || '\u2014'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ISO / Compliance Footer Strip -->
+                    <div class="footer">
+                        <div class="footer-left">
+                            <span style="font-size:16px;">&#127981;</span>
+                            <span class="footer-brand">ELAND ASSET TRACKING</span>
+                        </div>
+                        <div class="footer-right">
+                            <span class="footer-text">ISO 55001</span>
+                            <span style="color:#334155; font-size:9px;">|</span>
+                            <span style="color:#64748b; font-size:9px; font-weight:600;">Generated: ${todayStr}</span>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+
+            // Render QR Code and Barcode with Error Catching
+            setTimeout(() => {
+                try {
+                    const qrContainer = document.getElementById('mobileQrCode');
+                    if (!qrContainer) {
+                        console.error('QR container not found');
+                    } else if (typeof QRCode === 'undefined') {
+                        qrContainer.innerHTML = '<span style="color:red;font-size:10px;">QRCode library failed to load</span>';
+                    } else {
+                        new QRCode(qrContainer, {
+                            text: window.location.href,
+                            width: 108,
+                            height: 108,
+                            colorDark : "#1e293b",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                    }
+                } catch(e) { 
+                    console.error("QR Code Error:", e);
+                    const qrContainer = document.getElementById('mobileQrCode');
+                    if (qrContainer) qrContainer.innerHTML = '<span style="color:red;font-size:10px;">Error: ' + e.message + '</span>';
+                }
+
+                // Render Barcode
+                try {
+                    const bcContainer = document.getElementById('mobileBarcode');
+                    if (!bcContainer) {
+                        console.error('Barcode container not found');
+                    } else if (typeof JsBarcode === 'undefined') {
+                        bcContainer.outerHTML = '<span style="color:red;font-size:10px;">JsBarcode library failed to load</span>';
+                    } else if (data.code) {
+                        JsBarcode("#mobileBarcode", data.code, {
+                            format: "CODE128",
+                            lineColor: "#1e293b",
+                            width: 1.5,
+                            height: 35,
+                            displayValue: true,
+                            fontSize: 11,
+                            margin: 0,
+                            background: "transparent"
+                        });
+                    }
+                } catch(e) { 
+                    console.error("Barcode Error:", e); 
+                    const bcWrapper = document.querySelector('.barcode-wrapper');
+                    if (bcWrapper) bcWrapper.innerHTML = '<span style="color:red;font-size:10px;">Error: ' + e.message + '</span>';
+                }
+            }, 150);
+        };
+    </script>
+</body>
+</html>
